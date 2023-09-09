@@ -1,16 +1,71 @@
-console.log('hello hello')
+const dashboardSlug = document.getElementById('dashboard-slug').textContent.trim()
+const submitBtn = document.getElementById('submit-btn')
+const dataInput = document.getElementById('data-input')
+const user = document.getElementById('user').textContent.trim()
+const dataBox = document.getElementById('data-box')
 
-const socket = new WebSocket('ws://'+window.location.host + '/ws/test_statistic/');
+const socket = new WebSocket(`ws://${window.location.host}/ws/${dashboardSlug}/`);
 console.log(socket)
 
 socket.onmessage = function(e){
-    console.log('Server:'+ e.data);
+    const {sender, message} = JSON.parse(e.data)
+    dataBox.innerHTML += `<p>${sender}: ${message}</p>`
+    updateChart()
 }
 
-socket.onopen = function(e){
+submitBtn.addEventListener('click', ()=>{
+    const dataValue = dataInput.value 
     socket.send(JSON.stringify({
-        'message': 'Hello from the client',
-        'sender': 'test sender',
+        'message': dataValue,
+        'sender': user,
     }))
+})
+
+const fetchChartData = async() => {
+    const response = await fetch(window.location.href+ '/chart/')
+    const data = await response.json()
+    console.log(data);
+    return data
 }
 
+const ctx = document.getElementById('myChart').getContext('2d');
+let chart
+
+
+fetchChartData()
+
+
+const drawChart = async() => {
+    const data = await fetchChartData()
+    const {chartData, chartLabels} = data
+
+    chart = new Chart(ctx, {
+        type: 'pie',
+        data : {
+            labels: chartLabels,
+            datasets: [{
+                label: '% of contribution',
+                data: chartData,
+                borderWidth: 1
+
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beingAtZero: true
+                }
+            }
+        }
+    })
+}
+
+const updateChart = async() => {
+    if(chart){
+        chart.destroy()
+    }
+
+    await drawChart()
+}
+
+drawChart()

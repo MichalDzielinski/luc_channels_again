@@ -22,10 +22,21 @@
         <input type="number" id="data-input" class="form-control">
         <button class="btn btn-primary" id="submit-btn">Send</button>
     </div>
+    <div class="col">
+        <canvas id="myChart"></canvas>
+    </div>
+
 </div>
 
-<div class="col">
-    <canvas id="myChart"></canvas>
+<div id="data-box">
+    {% if data %}
+        {% for e in data %}
+            <p>{{e.owner}}: {{e.value}}</p>
+        {% endfor %}
+
+    {% endif %}
 </div>
+
+
 
 {% endblock %}
